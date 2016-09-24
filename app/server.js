@@ -1,7 +1,15 @@
-var http = require('http'); 
-var chalk = require('chalk');
+var fs = require('fs'),
+    http = require('http'),
+    path = require('path');
 
-var ioServer = require('./helpers/ioServer');
+var _ = require('busyman'),
+    chalk = require('chalk'),
+    cserver = require('coap-shepherd');
+
+var demoApp = require('./demoApp'),
+    utils = require('./helpers/utils'),
+    ioServer = require('./helpers/ioServer');
+
 var server = http.createServer();
 
 server.listen(3030);
@@ -20,128 +28,140 @@ var app = function () {
     setLeaveMsg();
 
 /**********************************/
-/* start shepherd                 */
-/**********************************/
-// start your shepherd
-
-/**********************************/
 /* register Req handler           */
 /**********************************/
     ioServer.regReqHdlr('getDevs', function (args, cb) { 
-        // register your req handler
-        // cb(err, data);
-        // example:
-        cb(null, { 
-            'AA:BB:CC:DD:FF': {
-                permAddr: 'AA:BB:CC:DD:FF',
-                status: 'online',
-                gads: { 
-                    'illu/0': {
-                        type: 'Illuminance',
-                        auxId: 'illu/0',
-                        value: '108'
-                    },
-                    'buzzer/0': {
-                        type: 'Buzzer',
-                        auxId: 'buzzer/0',
-                        value: true
-                    },
-                    'flame/0': {
-                        type: 'Flame',
-                        auxId: 'flame/0',
-                        value: false
-                    },
-                    'pir/0': {
-                        type: 'Pir',
-                        auxId: 'pir/0',
-                        value: true
-                    }
-                }
-            }
+        var devs = [];
+
+        _.forEach(cserver.list(), function (dev) {
+            devs.push(cserver.find(dev.clientName));
         });
+
+        cb(null, utils.getDevsInfo(devs));
     });
 
     ioServer.regReqHdlr('permitJoin', function (args, cb) { 
-        // register your req handler
-        // cb(err, data);
-        cb(null, null);
+        cserver.permitJoin(args.time);
+
+        cb(null);
     });
 
     ioServer.regReqHdlr('write', function (args, cb) { 
-        // register your req handler
-        // cb(err, data);
-        cb(null, false);
+        cserver.find(args.permAddr.split('/')[1]).writeReq(args.auxId, args.value, function (err, rsp) {
+            if (err)
+                cb(err); 
+            else
+                cb(null); 
+        });
     });
 
 /************************/
 /* Event handle         */
 /************************/
 /*** ready            ***/
-// readyInd();
+    cserver.on('ready', function () {
+        readyInd();
+    });
 
 /*** permitJoining    ***/
-// permitJoiningInd(timeLeft);
+    cserver.on('permitJoining', function (joinTimeLeft) {
+        permitJoiningInd(joinTimeLeft);
+
+        if (joinTimeLeft == 60) {
+            demoApp(toastInd);
+            // demoApp = function () {};
+        }
+    });
 
 /*** error            ***/
-// errorInd(msg);
+    cserver.on('error', function (err) {
+        errorInd(err);
+    });
 
+    cserver.on('ind', function (msg) {
+        var cnode = msg.cnode;
+
+        switch (msg.type) {
 /*** devIncoming      ***/
-// devIncomingInd(permAddr);
+            case 'devIncoming':
+                if (cnode.clientName === 'cnode1') {
+                    cnode.observeReq('temperature/0/sensorValue');
+                    cnode.observeReq('lightCtrl/0/onOff');
+                    cnode.observeReq('dIn/0/dInState');
+                } else if (cnode.clientName === 'cnode2') {
+                    cnode.observeReq('humidity/0/sensorValue');
+                    cnode.observeReq('presence/0/dInState');
+                } else if (cnode.clientName === 'cnode3') {
+                    cnode.observeReq('illuminance/0/sensorValue');
+                    cnode.observeReq('buzzer/0/onOff');
+                    cnode.observeReq('onOffSwitch/0/dInState');
+                }
+
+                devIncomingInd(utils.getDevInfo(cnode));
+                break;
 
 /*** devStatus        ***/
-// devStatusInd(permAddr, status);
+            case 'devStatus':
+                devStatusInd(utils.getPermAddr(cnode), msg.data);
+                break;
 
 /*** attrsChange      ***/
-// attrsChangeInd(permAddr, data);
+            case 'devNotify':
+                var pathArray = utils.pathSlashParser(msg.data.path),
+                    gad = utils.getGadInfo(pathArray[0], pathArray[1], pathArray[2], msg.data.value);
 
-/************************/
-/* fake Indication      */
-/************************/
-    setInterval(function () {
-        devIncomingInd({
-            permAddr: 'AA:BB:CC:DD:EE',
-            status: 'online',
-            gads: { 
-                'temp/0': {
-                    type: 'Temperature',
-                    auxId: 'temp/0',
-                    value: '19'
-                },
-                'hum/0': {
-                    type: 'Humidity',
-                    auxId: 'hum/0',
-                    value: '56'
-                },
-                'light/0': {
-                    type: 'Light',
-                    auxId: 'light/0',
-                    value: true
-                },
-                'switch/0': {
-                    type: 'Switch',
-                    auxId: 'switch/0',
-                    value: true
-                } 
-            }
-        });
-    }, 5000);
+                if (gad) {
+                    attrsChangeInd(utils.getPermAddr(cnode), gad);
 
-    setInterval(function () {
-        attrsChangeInd('AA:BB:CC:DD:EE', {
-            type: 'Temperature',
-            auxId: 'temp/0',
-            value: '22'
-        });
-    }, 7000);
+                    switch (gad.type) {
+                        case 'Switch':
+                            if (gad.value === 1) {
+                                cserver.find('cnode1').writeReq('lightCtrl/0/onOff', 1);
+                            } else if (gad.value === 0) {
+                                cserver.find('cnode1').writeReq('lightCtrl/0/onOff', 0);
+                            }
+                            break;
+                        case 'Illuminance':
+                            if (gad.value < 50) {
+                                cserver.find('cnode1').writeReq('lightCtrl/0/onOff', 1);
+                            } else if (gad.value >= 50) {
+                                cserver.find('cnode1').writeReq('lightCtrl/0/onOff', 0);
+                            }
+                            break;
+                        case 'Pir':
+                            if (gad.value === 1) {
+                                cserver.find('cnode1').writeReq('lightCtrl/0/onOff', 1);
+                            } else if (gad.value === 0) {
+                                cserver.find('cnode1').writeReq('lightCtrl/0/onOff', 0);
+                            }
+                            break;
+                        case 'Flame':
+                            if (gad.value === 1) {
+                                cserver.find('cnode3').writeReq('buzzer/0/onOff', 1);
+                            } else if (gad.value === 0) {
+                                cserver.find('cnode3').writeReq('buzzer/0/onOff', 0);
+                            }
+                            break;
+                        default:
+                            break;
+                    }
+                }
+                break;
+            default:
+                break;
+        }
+    });
 
-    setInterval(function () {
-        toastInd('Test');
-    }, 8000);
+/**********************************/
+/* start shepherd                 */
+/**********************************/
+// start your shepherd
+    var dbPath = path.resolve(__dirname, '../node_modules/coap-shepherd/lib/database/coap.db');
+    fs.exists(dbPath, function (isThere) {
+        if (isThere) { fs.unlink(dbPath); }
+    });
 
-    setInterval(function () {
-        devStatusInd('AA:BB:CC:DD:EE', 'offline');
-    }, 15000);
-
+    cserver.start();
 };
 
 
@@ -214,6 +234,7 @@ function permitJoiningInd (timeLeft) {
 function errorInd (msg) {
     ioServer.sendInd('error', { msg: msg });
     console.log(chalk.red('[         error ] ') + msg);
+    throw msg;
 }
 
 function devIncomingInd (dev) {
