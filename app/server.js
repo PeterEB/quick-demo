@@ -47,7 +47,12 @@ var app = function () {
     });
 
     ioServer.regReqHdlr('write', function (args, cb) { 
-        cserver.find(args.permAddr.split('/')[1]).writeReq(args.auxId, args.value, function (err, rsp) {
+        if (args.value === true)
+            args.value = 1;
+        else if (args.value === false)
+            args.value = 0;
+
+        cserver.find(args.permAddr).writeReq(args.auxId, args.value, function (err, rsp) {
             if (err)
                 cb(err); 
             else
@@ -69,7 +74,6 @@ var app = function () {
 
         if (joinTimeLeft == 60) {
             demoApp(toastInd);
-            // demoApp = function () {};
         }
     });
 
@@ -86,15 +90,15 @@ var app = function () {
             case 'devIncoming':
                 if (cnode.clientName === 'cnode1') {
                     cnode.observeReq('temperature/0/sensorValue');
-                    cnode.observeReq('lightCtrl/0/onOff');
-                    cnode.observeReq('dIn/0/dInState');
-                } else if (cnode.clientName === 'cnode2') {
-                    cnode.observeReq('humidity/0/sensorValue');
                     cnode.observeReq('presence/0/dInState');
-                } else if (cnode.clientName === 'cnode3') {
+                    cnode.observeReq('lightCtrl/0/onOff');
+                } else if (cnode.clientName === 'cnode2') {
                     cnode.observeReq('illuminance/0/sensorValue');
-                    cnode.observeReq('buzzer/0/onOff');
                     cnode.observeReq('onOffSwitch/0/dInState');
+                } else if (cnode.clientName === 'cnode3') {
+                    cnode.observeReq('humidity/0/sensorValue');
+                    cnode.observeReq('buzzer/0/onOff');
+                    cnode.observeReq('dIn/0/dInState');
                 }
 
                 devIncomingInd(utils.getDevInfo(cnode));
@@ -169,10 +173,10 @@ var app = function () {
 /* welcome function               */
 /**********************************/
 function showWelcomeMsg() {
-var coapPart1 = chalk.blue('     _____ ____   ___    ___          ____ __ __ ____ ___   __ __ ____ ___   ___ '),
-    coapPart2 = chalk.blue('    / ___// __ \\ / _ |  / _ \\  ____  / __// // // __// _ \\ / // // __// _ \\ / _ \\'),
-    coapPart3 = chalk.blue('   / /__ / /_/ // __ | / ___/ /___/ _\\ \\ / _  // _/ / ___// _  // _/ / , _// // /'),
-    coapPart4 = chalk.blue('   \\___/ \\____//_/ |_|/_/          /___//_//_//___//_/   /_//_//___//_/|_|/____/ ');
+var coapPart1 = chalk.blue('   _____ ____   ___    ___          ____ __ __ ____ ___   __ __ ____ ___   ___ '),
+    coapPart2 = chalk.blue('  / ___// __ \\ / _ |  / _ \\  ____  / __// // // __// _ \\ / // // __// _ \\ / _ \\'),
+    coapPart3 = chalk.blue(' / /__ / /_/ // __ | / ___/ /___/ _\\ \\ / _  // _/ / ___// _  // _/ / , _// // /'),
+    coapPart4 = chalk.blue(' \\___/ \\____//_/ |_|/_/          /___//_//_//___//_/   /_//_//___//_/|_|/____/ ');
 
     console.log('');
     console.log('');
@@ -182,10 +186,10 @@ var coapPart1 = chalk.blue('     _____ ____   ___    ___          ____ __ __ ___
     console.log(coapPart2);
     console.log(coapPart3);
     console.log(coapPart4);
-    console.log(chalk.gray('         A network server and manager for the CoAP machine network'));
+    console.log(chalk.gray('            An implementation of CoAP device management Server.'));
     console.log('');
     console.log('   >>> Author:     Peter Yi (peter.eb9@gmail.com)');
-    console.log('   >>> Version:    coap-shepherd v0.1.5');
+    console.log('   >>> Version:    coap-shepherd v1.0.0');
     console.log('   >>> Document:   https://github.com/PeterEB/coap-shepherd');
     console.log('   >>> Copyright (c) 2016 Peter Yi, The MIT License (MIT)');
     console.log('');

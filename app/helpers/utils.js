@@ -5,7 +5,7 @@ var _ = require('busyman');
 var utils = {};
 
 utils.getPermAddr = function (dev) {
-    return dev.mac + '/' + dev.clientName;
+    return dev.clientName;
 };
 
 utils.getDevsInfo = function (devs) {

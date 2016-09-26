@@ -11,10 +11,10 @@ var so1 = new SmartObject(),
 
 var value = {
     temp: function () {
-        return ((Math.random() * (35 - 20 + 1) ) + 20).toFixed(1);
+        return ((Math.random() * (30 - 25 + 1) ) + 25).toFixed(1);
     },
     humi: function () {
-        return ((Math.random() * (70 - 50 + 1) ) + 50).toFixed(1);
+        return ((Math.random() * (55 - 50 + 1) ) + 50).toFixed(1);
     },
     illu: 87,
     pir: 0,
@@ -35,6 +35,14 @@ so1.init('temperature', 0, {
     }
 });
 
+so1.init('presence', 0, {
+    dInState: {
+        read: function (cb) {
+            cb(null, value.pir);
+        }
+    }
+});
+
 so1.init('lightCtrl', 0, {
     onOff: {
         read: function (cb) {
@@ -47,29 +55,21 @@ so1.init('lightCtrl', 0, {
     }
 });
 
-so1.init('dIn', 0, {
-    dInState: {
-        read: function (cb) {
-            cb(null, value.flame);
-        }
-    }
-});
-
 /************************/
 /* so2 init             */
 /************************/
-so2.init('humidity', 0, {
+so2.init('illuminance', 0, {
     sensorValue: {
         read: function (cb) {
-            cb(null, value.humi());
+            cb(null, value.illu);
         }
     }
 });
 
-so2.init('presence', 0, {
+so2.init('onOffSwitch', 0, {
     dInState: {
         read: function (cb) {
-            cb(null, value.pir);
+            cb(null, value.onOff);
         }
     }
 });
@@ -77,10 +77,10 @@ so2.init('presence', 0, {
 /************************/
 /* so3 init             */
 /************************/
-so3.init('illuminance', 0, {
+so3.init('humidity', 0, {
     sensorValue: {
         read: function (cb) {
-            cb(null, value.illu);
+            cb(null, value.humi());
         }
     }
 });
@@ -97,10 +97,10 @@ so3.init('buzzer', 0, {
     }
 });
 
-so3.init('onOffSwitch', 0, {
+so3.init('dIn', 0, {
     dInState: {
         read: function (cb) {
-            cb(null, value.onOff);
+            cb(null, value.flame);
         }
     }
 });
@@ -126,7 +126,10 @@ function demoApp (toastInd) {
 
                 setInterval(function () {
                     cnode1.so.read('temperature', 0, 'sensorValue', undefined, function () {});
-                    cnode1.so.read('dIn', 0, 'dInState', undefined, function () {});
+                }, 3000);
+
+                setInterval(function () {
+                    cnode1.so.read('presence', 0, 'dInState', undefined, function () {});
                 }, 1000);
             });
         }, 2000);
@@ -138,10 +141,10 @@ function demoApp (toastInd) {
         setTimeout(function () {
             cnode2.register('127.0.0.1', 5683, function (err, rsp) {
                 if (err) console.log(err);
-
+                
                 setInterval(function () {
-                    cnode2.so.read('humidity', 0, 'sensorValue', undefined, function () {});
-                    cnode2.so.read('presence', 0, 'dInState', undefined, function () {});
+                    cnode2.so.read('illuminance', 0, 'sensorValue', undefined, function () {});
+                    cnode2.so.read('onOffSwitch', 0, 'dInState', undefined, function () {});
                 }, 1000);
             });
         }, 2000);
@@ -155,8 +158,11 @@ function demoApp (toastInd) {
                 if (err) console.log(err);
 
                 setInterval(function () {
-                    cnode3.so.read('illuminance', 0, 'sensorValue', undefined, function () {});
-                    cnode3.so.read('onOffSwitch', 0, 'dInState', undefined, function () {});
+                    cnode3.so.read('humidity', 0, 'sensorValue', undefined, function () {});
+                }, 3000);
+
+                setInterval(function () {
+                    cnode3.so.read('dIn', 0, 'dInState', undefined, function () {});
                 }, 1000);
             });
         }, 2000);
@@ -170,7 +176,7 @@ function demoApp (toastInd) {
         toastInd('User will turn on the light switch');
         setTimeout(function () {
             value.onOff = 1;
-        }, 2000);
+        }, 3000);
 
         setTimeout(function () {
             toastInd('User will turn off the light switch');
@@ -185,7 +191,7 @@ function demoApp (toastInd) {
         toastInd('Illumination is less than 50 lux, light would be turned on');
         setTimeout(function () {
             value.illu = 32;
-        }, 2000);
+        }, 3000);
 
         setTimeout(function () {
             toastInd('Illumination is greater than 50 lux, light would be turned off');
@@ -200,7 +206,7 @@ function demoApp (toastInd) {
         toastInd('PIR sensed someone walking around, light would be turned on');
         setTimeout(function () {
             value.pir = 1;
-        }, 2000);
+        }, 3000);
 
         setTimeout(function () {
             value.pir = 0;
@@ -208,10 +214,10 @@ function demoApp (toastInd) {
     }, 41000);
 
     setTimeout(function () {
-        toastInd('Flame sensor detect the presence of a flame or fire, buzzer would be turned on');
+        toastInd('Flame sensor detect the presence of a flame, buzzer would be turned on');
         setTimeout(function () {
             value.flame = 1;
-        }, 2000);
+        }, 3000);
 
         setTimeout(function () {
             value.flame = 0;
