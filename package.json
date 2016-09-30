@@ -1,6 +1,6 @@
 {
   "name": "quick-demo",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -20,8 +20,8 @@
   "dependencies": {
     "busyman": "^0.2.1",
     "chalk": "^1.1.3",
-    "coap-node": "^0.1.2",
-    "coap-shepherd": "^0.1.5",
+    "coap-node": "^0.1.4",
+    "coap-shepherd": "^0.1.7",
     "express": "^4.14.0",
     "smartobject": "^1.1.0",
     "socket.io": "^1.4.8"

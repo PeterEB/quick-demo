@@ -47,11 +47,6 @@ var app = function () {
     });
 
     ioServer.regReqHdlr('write', function (args, cb) { 
-        if (args.value === true)
-            args.value = 1;
-        else if (args.value === false)
-            args.value = 0;
-
         cserver.find(args.permAddr).writeReq(args.auxId, args.value, function (err, rsp) {
             if (err)
                 cb(err); 
@@ -119,31 +114,31 @@ var app = function () {
 
                     switch (gad.type) {
                         case 'Switch':
-                            if (gad.value === 1) {
-                                cserver.find('cnode1').writeReq('lightCtrl/0/onOff', 1);
-                            } else if (gad.value === 0) {
-                                cserver.find('cnode1').writeReq('lightCtrl/0/onOff', 0);
+                            if (gad.value === true) {
+                                cserver.find('cnode1').writeReq('lightCtrl/0/onOff', true);
+                            } else if (gad.value === false) {
+                                cserver.find('cnode1').writeReq('lightCtrl/0/onOff', false);
                             }
                             break;
                         case 'Illuminance':
                             if (gad.value < 50) {
-                                cserver.find('cnode1').writeReq('lightCtrl/0/onOff', 1);
+                                cserver.find('cnode1').writeReq('lightCtrl/0/onOff', true);
                             } else if (gad.value >= 50) {
-                                cserver.find('cnode1').writeReq('lightCtrl/0/onOff', 0);
+                                cserver.find('cnode1').writeReq('lightCtrl/0/onOff', false);
                             }
                             break;
                         case 'Pir':
-                            if (gad.value === 1) {
-                                cserver.find('cnode1').writeReq('lightCtrl/0/onOff', 1);
-                            } else if (gad.value === 0) {
-                                cserver.find('cnode1').writeReq('lightCtrl/0/onOff', 0);
+                            if (gad.value === true) {
+                                cserver.find('cnode1').writeReq('lightCtrl/0/onOff', true);
+                            } else if (gad.value === false) {
+                                cserver.find('cnode1').writeReq('lightCtrl/0/onOff', false);
                             }
                             break;
                         case 'Flame':
-                            if (gad.value === 1) {
-                                cserver.find('cnode3').writeReq('buzzer/0/onOff', 1);
-                            } else if (gad.value === 0) {
-                                cserver.find('cnode3').writeReq('buzzer/0/onOff', 0);
+                            if (gad.value === true) {
+                                cserver.find('cnode3').writeReq('buzzer/0/onOff', true);
+                            } else if (gad.value === false) {
+                                cserver.find('cnode3').writeReq('buzzer/0/onOff', false);
                             }
                             break;
                         default:

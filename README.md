@@ -37,4 +37,4 @@ When you first press the PERMIT JOIN button, server will create a few fake perip
 
 The following figure shows the entire process from server startup to the first permit join end.
 
-![coap-shepherd demo](https://github.com/PeterEB/quick-demo/tree/master/doc/quick%20demo.gif)  
+![coap-shepherd demo](https://github.com/PeterEB/quick-demo/blob/master/doc/quick%20demo.gif)  

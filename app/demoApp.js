@@ -17,11 +17,11 @@ var value = {
         return ((Math.random() * (55 - 50 + 1) ) + 50).toFixed(1);
     },
     illu: 87,
-    pir: 0,
-    onOff: 0,
-    flame: 0,
-    lightCtrl: 0,
-    buzzerCtrl: 0,
+    pir: false,
+    onOff: false,
+    flame: false,
+    lightCtrl: false,
+    buzzerCtrl: false,
 };
 
 /************************/
@@ -175,7 +175,7 @@ function demoApp (toastInd) {
     setTimeout(function () {
         toastInd('User will turn on the light switch');
         setTimeout(function () {
-            value.onOff = 1;
+            value.onOff = true;
         }, 3000);
 
         setTimeout(function () {
@@ -183,7 +183,7 @@ function demoApp (toastInd) {
         }, 6000);
 
         setTimeout(function () {
-            value.onOff = 0;
+            value.onOff = false;
         }, 9000);
     }, 17000);
 
@@ -205,22 +205,22 @@ function demoApp (toastInd) {
     setTimeout(function () {
         toastInd('PIR sensed someone walking around, light would be turned on');
         setTimeout(function () {
-            value.pir = 1;
+            value.pir = true;
         }, 3000);
 
         setTimeout(function () {
-            value.pir = 0;
+            value.pir = false;
         }, 9000);
     }, 41000);
 
     setTimeout(function () {
         toastInd('Flame sensor detect the presence of a flame, buzzer would be turned on');
         setTimeout(function () {
-            value.flame = 1;
+            value.flame = true;
         }, 3000);
 
         setTimeout(function () {
-            value.flame = 0;
+            value.flame = false;
         }, 9000);
     }, 53000);
 
