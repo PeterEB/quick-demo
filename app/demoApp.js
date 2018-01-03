@@ -1,7 +1,6 @@
 'use strict';
 
 var _ = require('busyman'), 
-    cserver = require('coap-shepherd'),
     CoapNode = require('coap-node'),
     SmartObject = require('smartobject');
 

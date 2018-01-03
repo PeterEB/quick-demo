@@ -104,7 +104,7 @@ var app = function () {
                 devStatusInd(utils.getPermAddr(cnode), msg.data);
                 break;
 
-/*** attrsChange      ***/
+/*** devNotify        ***/
             case 'devNotify':
                 var pathArray = utils.pathSlashParser(msg.data.path),
                     gad = utils.getGadInfo(pathArray[0], pathArray[1], pathArray[2], msg.data.value);
