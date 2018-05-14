@@ -157,7 +157,10 @@ var app = function () {
 // start your shepherd
     var dbPath = path.resolve(__dirname, '../node_modules/coap-shepherd/lib/database/coap.db');
     fs.exists(dbPath, function (isThere) {
-        if (isThere) { fs.unlink(dbPath); }
+        if (isThere)
+            fs.unlink(dbPath, function(err) {
+                if (err) throw err;
+            });
     });
 
     cserver.start();
