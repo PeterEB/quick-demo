@@ -23,6 +23,8 @@ var value = {
     buzzerCtrl: false,
 };
 
+var demoAppEnabled = false;
+
 /************************/
 /* so1 init             */
 /************************/
@@ -116,6 +118,12 @@ var remoteCnode1,
     remoteCnode3;
 
 function demoApp (toastInd) {
+    if (demoAppEnabled) {
+        return true;
+    }
+
+    demoAppEnabled = true;
+
     setTimeout(function () {
         toastInd('Device node1 will join the network');
 
@@ -223,6 +231,10 @@ function demoApp (toastInd) {
         }, 9000);
     }, 53000);
 
+
+    setTimeout(function () {
+       demoAppEnabled = false;
+    }, 59500);
 }
 
 module.exports = demoApp;
